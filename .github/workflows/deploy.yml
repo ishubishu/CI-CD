@@ -3,7 +3,7 @@ name: Deploy README to EC2
 on:
   push:
     branches:
-      - main  # Change branch if needed
+      - main  # Adjust if needed
 
 jobs:
   deploy:
@@ -13,11 +13,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup SSH and Run Script on EC2
+      - name: Setup SSH and Run Commands on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "Running README on EC2..."
+            # Define the repo directory on EC2
+            REPO_DIR=~/CI-CD
+
+            # Clone the repo if not exists, else pull latest changes
+            if [ ! -d "$REPO_DIR" ]; then
+              git clone https://github.com/ishubishu/CI-CD.git $REPO_DIR
+            else
+              cd $REPO_DIR
+              git pull origin main
+            fi
+
+            # Display the README.md content
+            cat $REPO_DIR/README.md
